@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "562063040421",
+    "project_id": "softwarepattern-85440",
+    "storage_bucket": "softwarepattern-85440.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:562063040421:android:2b6f6223106dfb3929124c",
+        "android_client_info": {
+          "package_name": "com.ecom.softwarepatternsca2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADEy3484kwVa4uVuPuQFT3Q9YH3ZDFnhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
