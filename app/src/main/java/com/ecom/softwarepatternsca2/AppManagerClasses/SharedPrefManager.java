@@ -1,14 +1,13 @@
-package com.ecom.softwarepatternsca2;
+package com.ecom.softwarepatternsca2.AppManagerClasses;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
 public class SharedPrefManager {
-    private static final String KEY_DARK_MODE = "DarkMode";
     Context context;
 
 
-    SharedPrefManager(Context context) {
+    public SharedPrefManager(Context context) {
         this.context = context;
     }
     public void saveLoginDetails(String email, String password) {
@@ -38,19 +37,6 @@ public class SharedPrefManager {
         editor.apply();
     }
 
-    // Save Dark Mode Preference
-    public void saveDarkMode(boolean darkModeEnabled) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("darkMode", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(KEY_DARK_MODE, darkModeEnabled);
-        editor.apply();
-    }
-
-    // Retrieve Dark Mode Preference
-    public boolean isDarkModeEnabled() {
-        SharedPreferences sharedPreferences = context.getSharedPreferences("darkMode", Context.MODE_PRIVATE);
-        return sharedPreferences.getBoolean(KEY_DARK_MODE, false);
-    }
 
 }
 

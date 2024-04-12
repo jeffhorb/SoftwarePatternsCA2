@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">SoftwarePatternsCA2</string>
+
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+
+    <string-array name="category">
+        <item> All Items</item>
+        <item> Shoes</item>
+        <item> Jeans</item>
+        <item> Shirt</item>
+        <item> Trousers</item>
+    </string-array>
 </resources>
