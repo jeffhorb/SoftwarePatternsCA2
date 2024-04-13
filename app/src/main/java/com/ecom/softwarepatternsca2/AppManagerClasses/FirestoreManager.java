@@ -1,16 +1,58 @@
 package com.ecom.softwarepatternsca2.AppManagerClasses;
 
+import androidx.annotation.Nullable;
+
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.Map;
 
 public class FirestoreManager {
 
-    private final FirebaseFirestore firestore;
+    public final FirebaseFirestore firestore;
+
+    private static FirestoreManager instance;
 
     public FirestoreManager() {
         this.firestore = FirebaseFirestore.getInstance();
+    }
+
+    //singleton instance
+    public static FirestoreManager getInstance() {
+        if (instance == null) {
+            instance = new FirestoreManager();
+        }
+        return instance;
+    }
+
+    public interface OnQuantityUpdateListener {
+        void onQuantityUpdate(String updatedQuantity);
+    }
+
+
+    public void listenForQuantityUpdates(String itemId, OnQuantityUpdateListener listener) {
+        FirebaseFirestore.getInstance().collection("Stock").document(itemId)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            // Handle errors
+                            return;
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            // Retrieve updated quantity from snapshot
+                            String updatedQuantity = snapshot.getString("quantity");
+
+                            // Notify listener
+                            if (listener != null) {
+                                listener.onQuantityUpdate(updatedQuantity);
+                            }
+                        }
+                    }
+                });
     }
 
     // Method to get the document ID from Firestore

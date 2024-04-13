@@ -1,6 +1,8 @@
 package com.ecom.softwarepatternsca2.ModelClasses;
 
-public class Stock {
+import java.io.Serializable;
+
+public class Stock implements Serializable {
     private String category;
     private String manufacturer;
     private String itemName;

@@ -1,10 +1,13 @@
 package com.ecom.softwarepatternsca2.Patterns;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -89,6 +92,76 @@ public class AlertDialogBuilder {
         dialog.show();
         return dialog;
     }
+
+
+    public interface OnUpdateClickListener {
+        void onUpdate(String newQuantity);
+    }
+
+    public interface OnPurchaseClickListener {
+        void onPurchase(String purchaseQuantity);
+    }
+
+    public void showUpdateDialog(Context context, OnUpdateClickListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Update Stock Quantity");
+
+        // Set up the input
+        final EditText input = new EditText(context);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Enter new quantity");
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newQuantity = input.getText().toString().trim();
+                if (listener != null) {
+                    listener.onUpdate(newQuantity);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void showSimulatePurchaseDialog(Context context, OnPurchaseClickListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Simulate Purchase");
+
+        // Set up the input
+        final EditText input = new EditText(context);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Enter purchase quantity");
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Purchase", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String purchaseQuantity = input.getText().toString().trim();
+                if (listener != null) {
+                    listener.onPurchase(purchaseQuantity);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
 }
 
 

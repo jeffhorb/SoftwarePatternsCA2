@@ -139,6 +139,8 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         });
     }
 
+    //ADD A SORT BASED ON PRICE lowest to highest - highest to lowest
+
     @Override
     public void onItemClicked(Stock stock) {
     }

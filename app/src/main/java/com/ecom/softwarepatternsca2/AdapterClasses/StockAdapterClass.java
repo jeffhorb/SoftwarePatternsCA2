@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -89,9 +90,13 @@ public class StockAdapterClass extends RecyclerView.Adapter<StockAdapterClass.Vi
                     public void onResult(boolean isAdmin) {
                         if (isAdmin) {
                             Intent intent = new Intent(context, AdminSelectedItemActivity.class);
-                            context.startActivity(intent);                        }
+                            // the selected project as an extra in the Intent
+                            intent.putExtra("selectedItem",stock);
+                            context.startActivity(intent);
+                        }
                         else {
                             Intent intent = new Intent(context, CustomerSelectedItemActivity.class);
+                            intent.putExtra("selectedItem",stock);
                             context.startActivity(intent);
                         }
                     }
@@ -100,7 +105,7 @@ public class StockAdapterClass extends RecyclerView.Adapter<StockAdapterClass.Vi
         });
 
         // Set onClickListener for rateIcon
-        holder.rateIcon.setOnClickListener(new View.OnClickListener() {
+        holder.rate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (listener != null) {
@@ -120,7 +125,7 @@ public class StockAdapterClass extends RecyclerView.Adapter<StockAdapterClass.Vi
         TextView itemName, price, manufacturer, quantity;
         CardView cardView;
         ImageView itemImage;
-        ImageView rateIcon;
+        LinearLayout rate;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -131,7 +136,7 @@ public class StockAdapterClass extends RecyclerView.Adapter<StockAdapterClass.Vi
             manufacturer = itemView.findViewById(R.id.manufacturer);
             quantity = itemView.findViewById(R.id.quantity);
             itemImage = itemView.findViewById(R.id.itemImage);
-            rateIcon = itemView.findViewById(R.id.rate);
+            rate = itemView.findViewById(R.id.rate);
 
         }
     }
