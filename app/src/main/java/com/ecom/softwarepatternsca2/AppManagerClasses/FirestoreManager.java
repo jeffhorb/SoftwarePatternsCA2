@@ -1,7 +1,14 @@
 package com.ecom.softwarepatternsca2.AppManagerClasses;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,6 +36,28 @@ public class FirestoreManager {
 
     public interface OnQuantityUpdateListener {
         void onQuantityUpdate(String updatedQuantity);
+    }
+
+    public interface TransactionCompletionListener {
+        void onTransactionCompleted(boolean success, String errorMessage);
+    }
+
+    public void addDocument(String collectionPath, Map<String, Object> data, TransactionCompletionListener listener) {
+        CollectionReference collectionReference = firestore.collection(collectionPath);
+
+        collectionReference.add(data)
+                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()) {
+                            Log.d("TAG", "Document added successfully");
+                            listener.onTransactionCompleted(true, null);
+                        } else {
+                            Log.e("TAG", "Error adding document: " + task.getException());
+                            listener.onTransactionCompleted(false, task.getException().getMessage());
+                        }
+                    }
+                });
     }
 
 

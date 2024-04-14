@@ -1,7 +1,9 @@
 package com.ecom.softwarepatternsca2.ModelClasses;
 
 
-public class CustomerDetails {
+import java.io.Serializable;
+
+public class CustomerDetails implements Serializable {
     private String customerName;
     private String customerEmail;
     private String customerId;

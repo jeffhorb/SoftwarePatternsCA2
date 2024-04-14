@@ -11,4 +11,30 @@
         <item> Shirt</item>
         <item> Trousers</item>
     </string-array>
+
+    <string-array name="card_types">
+        <item> Card Type</item>
+        <item> Debit</item>
+        <item> Credit</item>
+        <item> Master</item>
+    </string-array>
+
+    <string-array name="sort">
+        <item> Sort Products</item>
+        <item> Highest to Lowest Price</item>
+        <item> Lowest to Highest Price</item>
+
+    </string-array>
+
+    <string-array name="size">
+        <item> 0</item>
+        <item> 1</item>
+        <item> 2</item>
+        <item> 3</item>
+        <item> 4</item>
+        <item> 5</item>
+        <item> 6</item>
+        <item> 7</item>
+        <item> 8</item>
+    </string-array>
 </resources>

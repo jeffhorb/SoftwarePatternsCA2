@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.ecom.softwarepatternsca2.Patterns.AlertDialogBuilder;
 import com.ecom.softwarepatternsca2.Patterns.FirebaseAuthFactory;
-import com.ecom.softwarepatternsca2.Patterns.FirebaseFirestoreFactory;
+import com.ecom.softwarepatternsca2.AppManagerClasses.FirestoreManager;
 import com.ecom.softwarepatternsca2.Patterns.PasswordValidatorObserver;
 import com.ecom.softwarepatternsca2.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -62,7 +62,7 @@ public class SignUpActivity extends AppCompatActivity {
     // Setup FirebaseAuth and FirebaseFirestore instances using Factory Method
     private void setupFirebaseInstances() {
         authenticate = FirebaseAuthFactory.createInstance();
-        db = FirebaseFirestoreFactory.createInstance();
+        db = FirestoreManager.getInstance().firestore;
     }
 
     // Setup password validation observer using Observer Pattern

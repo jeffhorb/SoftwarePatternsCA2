@@ -33,7 +33,7 @@ import com.ecom.softwarepatternsca2.Interfaces.NavigationHandler;
 import com.ecom.softwarepatternsca2.Interfaces.StockInteractionListener;
 import com.ecom.softwarepatternsca2.ModelClasses.Stock;
 import com.ecom.softwarepatternsca2.Patterns.FirestoreDataObserver;
-import com.ecom.softwarepatternsca2.Patterns.StockFactory;
+import com.ecom.softwarepatternsca2.Patterns.Factory;
 import com.ecom.softwarepatternsca2.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -51,6 +51,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,7 +70,7 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
     private boolean manageAccountClicked;
 
     private FirestoreDataObserver dataObserver;
-    private StockFactory stockFactory;
+    private Factory stockFactory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +80,7 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         initializeViews();
         setupSearchView();
         setupCategorySpinner();
+        Sort();
 
         getAllItems();
 
@@ -121,7 +123,7 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
 
         sharedPrefManager = new SharedPrefManager(this);
         dataObserver = new FirestoreDataObserver(stockArrayList, recyclerAdapter);
-        stockFactory = new StockFactory();
+        stockFactory = new Factory();
 
         // Get a reference to the BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -195,6 +197,51 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
                 // Do nothing
             }
         });
+    }
+
+    private void Sort() {
+        Spinner sort = findViewById(R.id.sort);
+        sort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                String selectedCategory = parentView.getItemAtPosition(position).toString();
+                if (selectedCategory.equals("Sort Products")) {
+                    getAllItems();
+                } else if (selectedCategory.equals("Highest to Lowest Price")) {
+                    sortByPriceDescending();
+                } else if (selectedCategory.equals("Lowest to Highest Price")) {
+                    sortByPriceAscending();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Do nothing
+            }
+        });
+    }
+
+    private void sortByPriceDescending() {
+        stockArrayList.sort((stock1, stock2) -> {
+            double price1 = extractPrice(stock1.getPrice());
+            double price2 = extractPrice(stock2.getPrice());
+            return Double.compare(price2, price1);
+        });
+        recyclerAdapter.updateList(stockArrayList);
+    }
+
+    private void sortByPriceAscending() {
+        stockArrayList.sort((stock1, stock2) -> {
+            double price1 = extractPrice(stock1.getPrice());
+            double price2 = extractPrice(stock2.getPrice());
+            return Double.compare(price1, price2);
+        });
+        recyclerAdapter.updateList(stockArrayList);
+    }
+
+    private double extractPrice(@NonNull String priceWithCurrency) {
+        // removing the currency symbol
+        String priceWithoutCurrency = priceWithCurrency.substring(1);
+        return Double.parseDouble(priceWithoutCurrency);
     }
     @Override
     public void openCustomerList() {

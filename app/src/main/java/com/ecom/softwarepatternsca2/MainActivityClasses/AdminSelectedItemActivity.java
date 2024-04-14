@@ -62,7 +62,7 @@ public class AdminSelectedItemActivity extends AppCompatActivity {
         quantity = findViewById(R.id.quantity);
         itemImage = findViewById(R.id.itemImage);
         category = findViewById(R.id.category);
-        updateStock = findViewById(R.id.updateStock);
+        updateStock = findViewById(R.id.UpdateStock);
         simulatePurchase = findViewById(R.id.simulatePurchase);
         ratingReview = findViewById(R.id.rate);
     }
@@ -134,7 +134,7 @@ public class AdminSelectedItemActivity extends AppCompatActivity {
 
     private void updateQuantityInFirestore(String newQuantity) {
         // Retrieve the existing quantity from Firestore
-        firestoreManager.getDocumentId("Stock", "itemName", itemName.getText().toString(), new FirestoreManager.OnDocumentIdRetrievedListener() {
+                firestoreManager.getDocumentId("Stock", "itemName", itemName.getText().toString(), new FirestoreManager.OnDocumentIdRetrievedListener() {
             @Override
             public void onDocumentIdRetrieved(String documentId) {
                 if (documentId != null) {

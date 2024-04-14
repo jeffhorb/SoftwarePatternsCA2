@@ -49,9 +49,9 @@ public class SelectedItemManager {
                                                     @Override
                                                     public void onUpdateComplete(boolean success) {
                                                         if (success) {
-                                                            Toast.makeText(context, "Purchase simulated successfully", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(context, "Purchase successful", Toast.LENGTH_SHORT).show();
                                                         } else {
-                                                            Toast.makeText(context, "Failed to simulate purchase", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(context, "Purchase cancelled", Toast.LENGTH_SHORT).show();
                                                         }
                                                     }
                                                 });
