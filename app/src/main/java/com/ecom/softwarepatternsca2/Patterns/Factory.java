@@ -15,10 +15,10 @@ public class Factory {
         return new Stock(category, manufacturer, itemName, price, quantity, imageUrl);
     }
 
-    public TransactionDetails createTransaction(String name, String email, String address1, String address2, String address3, String eircode, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId) {
+    public TransactionDetails createTransaction(String name, String email, String address1, String address2, String address3, String eircode, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
 
        return new TransactionDetails ( name,  email,  address1,  address2,  address3,
-                 eircode,  itemName,  quantity,  totalPrice,  discount,  customerDocumentId);
+                 eircode,  itemName,  quantity,  totalPrice,  discount,  customerDocumentId,unitPrice);
     }
 
 

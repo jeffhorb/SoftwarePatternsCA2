@@ -16,13 +16,15 @@ public class TransactionDetails {
     private double totalPrice;
     private double discount;
 
+    private String unitPrice;
+
     private String customerDocumentId;
 
     public TransactionDetails() {
     }
 
     public TransactionDetails(String name, String email, String address1, String address2, String address3,
-                              String eircode, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId) {
+                              String eircode, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
         this.name = name;
         this.email = email;
         this.address1 = address1;
@@ -34,6 +36,7 @@ public class TransactionDetails {
         this.totalPrice = totalPrice;
         this.discount = discount;
         this.customerDocumentId = customerDocumentId;
+        this.unitPrice = unitPrice;
     }
 
     public String getName() {
@@ -122,5 +125,13 @@ public class TransactionDetails {
 
     public void setCustomerDocumentId(String customerDocumentId) {
         this.customerDocumentId = customerDocumentId;
+    }
+
+    public String getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(String unitPrice) {
+        this.unitPrice = unitPrice;
     }
 }

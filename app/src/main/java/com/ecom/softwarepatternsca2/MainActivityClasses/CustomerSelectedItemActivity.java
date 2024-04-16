@@ -328,7 +328,7 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
     }
 
         private void storeTransactionDetails(String name, String email, String address1, String address2, String address3, String eircode,
-                                         String itemName, int quantity, double totalPrice, double discount) {
+                                         String itemName, int quantity, double totalPrice, double discount,String price) {
         // Create a map to store transaction details
         Map<String, Object> transactionDetails = new HashMap<>();
         transactionDetails.put("name", name);
@@ -342,11 +342,12 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
         transactionDetails.put("totalPrice", totalPrice);
         transactionDetails.put("discount", discount);
         transactionDetails.put("customerDocumentId", customerDocId);
+        transactionDetails.put("unitPrice",price);
 
         ArrayList<TransactionDetails> updatedData = new ArrayList<>();
 
         TransactionDetails transaction = transactionDetailsFactory.createTransaction( name,  email,  address1,  address2,  address3,
-                eircode,  itemName,  quantity,  totalPrice,  discount,  customerDocId);
+                eircode,  itemName,  quantity,  totalPrice,  discount,  customerDocId,price);
         updatedData.add(transaction);
 
         // Store the transaction details in Firestore
@@ -442,7 +443,8 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
 
                             SelectedItemManager.simulatePurchase(CustomerSelectedItemActivity.this, itemName.getText().toString(), Integer.parseInt(qty));
                             // Call method to store details in customerTransaction Collection
-                            storeTransactionDetails(name, em, addr1, addr2, addr3, eir, itemName.getText().toString(), Integer.parseInt(qty), totalPrice, moneySaved);
+                            storeTransactionDetails(name, em, addr1, addr2, addr3, eir, itemName.getText().toString(), Integer.parseInt(qty), totalPrice, moneySaved,
+                                    price.getText().toString());
 
                             AlertDialog.Builder successDialogBuilder = new AlertDialog.Builder(CustomerSelectedItemActivity.this);
                             successDialogBuilder.setMessage("Purchase Successful.")

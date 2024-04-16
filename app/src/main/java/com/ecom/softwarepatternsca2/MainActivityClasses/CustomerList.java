@@ -91,7 +91,11 @@ public class CustomerList extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 CustomerDetails customer = document.toObject(CustomerDetails.class);
-                                customerDetails.add(customer);
+                                String role = document.getString("role");
+                                assert role != null;
+                                if(!role.equals("admin")){
+                                    customerDetails.add(customer);
+                                }
                             }
                             adapter.notifyDataSetChanged();
                         } else {

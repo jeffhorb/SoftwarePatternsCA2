@@ -108,6 +108,8 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
 
         NavigationView navigationView = findViewById(R.id.nav_view);
 
+
+
         // Set the item click listener for NavigationView
         navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
         navigationView.bringToFront();
