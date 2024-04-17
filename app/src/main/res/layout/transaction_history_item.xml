@@ -43,6 +43,15 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:singleLine="true"
+            android:text="size"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/totalCost"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

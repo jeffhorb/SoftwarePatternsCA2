@@ -111,10 +111,8 @@ public class CustomerTransactionHistoryActivity extends AppCompatActivity {
                                 // Transactions found, show the RecyclerView
                                 recyclerView.setVisibility(View.VISIBLE);
                             }
-                        } else {
-                            // Handle errors
+                        }  // Handle errors
 
-                        }
                     }
                 });
     }

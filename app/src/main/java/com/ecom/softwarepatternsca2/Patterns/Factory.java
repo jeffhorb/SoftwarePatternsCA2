@@ -3,6 +3,7 @@ package com.ecom.softwarepatternsca2.Patterns;
 
 import androidx.annotation.NonNull;
 
+import com.ecom.softwarepatternsca2.ModelClasses.BasketList;
 import com.ecom.softwarepatternsca2.ModelClasses.Stock;
 import com.ecom.softwarepatternsca2.ModelClasses.TransactionDetails;
 
@@ -15,12 +16,13 @@ public class Factory {
         return new Stock(category, manufacturer, itemName, price, quantity, imageUrl);
     }
 
-    public TransactionDetails createTransaction(String name, String email, String address1, String address2, String address3, String eircode, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
-
-       return new TransactionDetails ( name,  email,  address1,  address2,  address3,
-                 eircode,  itemName,  quantity,  totalPrice,  discount,  customerDocumentId,unitPrice);
+    public TransactionDetails createTransaction(String size,  String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
+        return new TransactionDetails ( size, itemName,  quantity,  totalPrice,  discount,  customerDocumentId,unitPrice);
     }
 
+    public BasketList createBasket(String size, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId, String unitPrice) {
+        return new BasketList ( size, itemName,  quantity,  totalPrice,  discount,  customerDocumentId,unitPrice);
+    }
 
 }
 

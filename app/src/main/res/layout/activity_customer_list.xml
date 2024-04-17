@@ -29,16 +29,25 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/noCus"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:textSize="18dp"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No Customers"/>
+
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:focusable="false"
             app:iconifiedByDefault="false"
             app:queryHint="Search" />
-
-
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -251,6 +252,26 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         startActivity(intent);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //return super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.basket, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.basket) {
+            Intent intent = new Intent(HomePage.this, ShoppingBasket.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
     private void getAllItems() {
         db.collection("Stock").addSnapshotListener((value, error) -> {
             if (error != null) {
@@ -319,6 +340,9 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
             manageAccountClicked = true;
             // Update the user details in the navigation header
             setUserDetailsInNavHeader();
+        }else if (itemId == R.id.viewTransaction){
+
+
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);

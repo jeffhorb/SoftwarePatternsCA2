@@ -40,6 +40,8 @@ public class TransactionHistoryAdapter extends RecyclerView.Adapter<TransactionH
         holder.totalCost.setText("Total Cost:  "+String.valueOf(transactionDetails.getTotalPrice()));
         holder.discount.setText("Discount:  "+"€"+String.valueOf(transactionDetails.getDiscount()));
         holder.itemPrice.setText("Unit Price:  "+transactionDetails.getUnitPrice());
+        holder.size.setText("Size:  "+transactionDetails.getSize());
+
     }
 
     @Override
@@ -57,6 +59,7 @@ public class TransactionHistoryAdapter extends RecyclerView.Adapter<TransactionH
         TextView itemName;
         TextView totalCost;
         TextView discount;
+        TextView size;
 
         TextView quantityPurchased;
 
@@ -67,6 +70,7 @@ public class TransactionHistoryAdapter extends RecyclerView.Adapter<TransactionH
             totalCost = itemView.findViewById(R.id.totalCost);
             discount = itemView.findViewById(R.id.discount);
             quantityPurchased = itemView.findViewById(R.id.qty);
+            size = itemView.findViewById(R.id.size);
 
         }
 

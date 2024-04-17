@@ -1,6 +1,9 @@
 package com.ecom.softwarepatternsca2.MainActivityClasses;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -89,19 +92,29 @@ public class CustomerList extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                CustomerDetails customer = document.toObject(CustomerDetails.class);
-                                String role = document.getString("role");
-                                assert role != null;
-                                if(!role.equals("admin")){
-                                    customerDetails.add(customer);
+                            if (task.getResult().isEmpty()) {
+                                // Handle case when no customers are fetched
+                                Toast.makeText(CustomerList.this, "No customers found.", Toast.LENGTH_SHORT).show();
+                                TextView noCus = findViewById(R.id.noCus);
+                                noCus.setVisibility(View.VISIBLE);
+                                recyclerView.setVisibility(View.GONE);
+                            } else {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    CustomerDetails customer = document.toObject(CustomerDetails.class);
+                                    String role = document.getString("role");
+                                    assert role != null;
+                                    if(!role.equals("admin")){
+                                        customerDetails.add(customer);
+                                    }
                                 }
+                                adapter.notifyDataSetChanged();
                             }
-                            adapter.notifyDataSetChanged();
                         } else {
                             // Handle errors
+                            Toast.makeText(CustomerList.this, "Failed to fetch customers. Please try again later.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
+
 }
