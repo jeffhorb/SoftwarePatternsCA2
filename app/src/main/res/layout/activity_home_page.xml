@@ -28,6 +28,7 @@
 
     </LinearLayout>
 
+
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
@@ -57,11 +58,38 @@
             app:menu="@menu/bottom_menu"
             android:visibility="gone"/>
 
+
+        <LinearLayout
+            android:id="@+id/myBasket"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginStart="300dp"
+            android:gravity="right"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_gravity="right"
+                android:src="@drawable/outline_shopping_basket_24" />
+
+            <TextView
+                android:id="@+id/basketC"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="16dp"
+                android:textStyle="bold"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="64dp"
+            android:layout_marginTop="90dp"
             android:focusable="false"
             app:iconifiedByDefault="false"
             app:queryHint="Search" />
@@ -98,14 +126,40 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="695dp"
-            android:layout_above="@+id/bottom_navigation"
+            android:layout_height="655dp"
             android:layout_below="@+id/line1"
-            android:layout_marginBottom="2dp"
             android:layout_marginTop="-10dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:padding="16dp"
             android:scrollbars="vertical"/>
+
+        <LinearLayout
+            android:id="@+id/transList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/recyclerView"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="55dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_list_alt_24" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="TransactionList "
+                android:textColor="@color/black"
+                android:textSize="16dp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+
 
     </RelativeLayout>
 

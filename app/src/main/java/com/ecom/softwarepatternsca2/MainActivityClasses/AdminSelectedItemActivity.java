@@ -118,7 +118,8 @@ public class AdminSelectedItemActivity extends AppCompatActivity {
         alertDialogBuilder.showUpdateDialog(this, new AlertDialogBuilder.OnUpdateClickListener() {
             @Override
             public void onUpdate(String newQuantity) {
-                updateQuantityInFirestore(newQuantity);
+
+                SelectedItemManager.updateQuantityInFirestore(AdminSelectedItemActivity.this, itemName.getText().toString(), Integer.parseInt(newQuantity));
             }
         });
     }
@@ -128,66 +129,6 @@ public class AdminSelectedItemActivity extends AppCompatActivity {
             @Override
             public void onPurchase(String purchaseQuantity) {
                 SelectedItemManager.simulatePurchase(AdminSelectedItemActivity.this, itemName.getText().toString(), Integer.parseInt(purchaseQuantity));
-            }
-        });
-    }
-
-    private void updateQuantityInFirestore(String newQuantity) {
-        // Retrieve the existing quantity from Firestore
-                firestoreManager.getDocumentId("Stock", "itemName", itemName.getText().toString(), new FirestoreManager.OnDocumentIdRetrievedListener() {
-            @Override
-            public void onDocumentIdRetrieved(String documentId) {
-                if (documentId != null) {
-                    firestoreManager.firestore.collection("Stock").document(documentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                DocumentSnapshot document = task.getResult();
-                                if (document.exists()) {
-                                    // Get the existing quantity from Firestore
-                                    String existingQuantityString = document.getString("quantity");
-                                    if (existingQuantityString != null) {
-                                        try {
-                                            // Convert existing and new quantities to integers
-                                            int existingQuantity = Integer.parseInt(existingQuantityString);
-                                            int newQuantityInt = Integer.parseInt(newQuantity);
-
-                                            // Calculate the updated quantity
-                                            int updatedQuantity = existingQuantity + newQuantityInt;
-
-                                            // Update the quantity in Firestore
-                                            Map<String, Object> data = new HashMap<>();
-                                            data.put("quantity", String.valueOf(updatedQuantity));
-
-                                            firestoreManager.updateDocument("Stock", documentId, data, new FirestoreManager.OnUpdateCompleteListener() {
-                                                @Override
-                                                public void onUpdateComplete(boolean success) {
-                                                    if (success) {
-                                                        // Update UI to reflect the new quantity
-                                                        quantity.setText("Updated qty:  "+updatedQuantity + " Units");
-                                                        Toast.makeText(AdminSelectedItemActivity.this, "Stock quantity updated successfully", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(AdminSelectedItemActivity.this, "Failed to update stock quantity", Toast.LENGTH_SHORT).show();
-                                                    }
-                                                }
-                                            });
-                                        } catch (NumberFormatException e) {
-                                            Toast.makeText(AdminSelectedItemActivity.this, "Invalid quantity format", Toast.LENGTH_SHORT).show();
-                                        }
-                                    } else {
-                                        Toast.makeText(AdminSelectedItemActivity.this, "Existing quantity not found", Toast.LENGTH_SHORT).show();
-                                    }
-                                } else {
-                                    Toast.makeText(AdminSelectedItemActivity.this, "Document does not exist", Toast.LENGTH_SHORT).show();
-                                }
-                            } else {
-                                Toast.makeText(AdminSelectedItemActivity.this, "Failed to get document: " + task.getException(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                } else {
-                    Toast.makeText(AdminSelectedItemActivity.this, "Document ID not found", Toast.LENGTH_SHORT).show();
-                }
             }
         });
     }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/stockList"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardElevation="6dp"
+    android:layout_margin="3dp"
+    app:cardPreventCornerOverlap="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:background="@color/blue"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/itemN"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:padding="2dp"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:text="itemName"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
+        <TextView
+            android:id="@+id/itemP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:singleLine="true"
+            android:text="itemPrice"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/itemQty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:singleLine="true"
+            android:text="quantityBought"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/itemS"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:singleLine="true"
+            android:text="size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tCost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:layout_gravity="right"
+            android:textColor="@color/black"
+            android:gravity="right"
+            android:singleLine="true"
+            android:text="totalCost"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/itemDiscount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:gravity="right"
+            android:singleLine="true"
+            android:text="discount"
+            android:textStyle="bold" />
+
+
+            <Button
+                android:id="@+id/removeFromBasket"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="2dp"
+                android:textSize="14dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@color/red"
+                android:text="Remove"
+                android:textStyle="bold" />
+
+
+
+
+
+
+
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

@@ -1,53 +1,38 @@
 package com.ecom.softwarepatternsca2.MainActivityClasses;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.ecom.softwarepatternsca2.AppManagerClasses.BasketCounter;
 import com.ecom.softwarepatternsca2.AppManagerClasses.FirestoreManager;
+import com.ecom.softwarepatternsca2.Interfaces.BasketCountListener;
 import com.ecom.softwarepatternsca2.ModelClasses.BasketList;
 import com.ecom.softwarepatternsca2.ModelClasses.Stock;
 import com.ecom.softwarepatternsca2.ModelClasses.TransactionDetails;
 import com.ecom.softwarepatternsca2.Patterns.Factory;
 import com.ecom.softwarepatternsca2.R;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-public class CustomerSelectedItemActivity extends AppCompatActivity {
+public class CustomerSelectedItemActivity extends AppCompatActivity implements BasketCountListener {
 
     TextView itemName, price, manufacturer, category;
 
@@ -62,12 +47,17 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
 
     private Factory transactionDetailsFactory;
 
-
     private LinearLayout ratingReview;
     String itemN,itemId;
     double totalPrice,moneySaved;
 
     String customerDocId;
+
+    MaterialToolbar toolbar;
+
+    LinearLayout basket;
+
+    TextView basketCount;
 
 
     @Override
@@ -83,13 +73,14 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
         itemQty = findViewById(R.id.selectQty);
         itemSize = findViewById(R.id.selectSize);
         ratingReview = findViewById(R.id.rate);
+        basketCount = findViewById(R.id.basketC);
+        basket = findViewById(R.id.myBasket);
 
         getCustomerDetails();
 
         transactionDetailsFactory = new Factory();
 
-
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
@@ -118,6 +109,14 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
                 }
             });
         }
+
+        basket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CustomerSelectedItemActivity.this, ShoppingBasket.class);
+                startActivity(intent);
+            }
+        });
 
         addToBasket.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,23 +163,10 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //return super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.basket, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.basket) {
-            Intent intent = new Intent(CustomerSelectedItemActivity.this, ShoppingBasket.class);
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+    // Method to update the basket count in real time
+    public void updateBasket(int itemCount) {
+        // Update the basketCount TextView with the new item count
+        basketCount.setText(String.valueOf(itemCount));
     }
 
 
@@ -195,6 +181,7 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
                 .addOnSuccessListener(customerQuerySnapshot1 -> {
                     for (QueryDocumentSnapshot customerDocument : customerQuerySnapshot1) {
                         customerDocId = customerDocument.getId();
+                        BasketCounter.getInstance().getBasketItemCountForCustomer(customerDocId, this);
                     }
                 });
     }
@@ -266,27 +253,10 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
         transactionDetails.put("unitPrice",price);
 
 
-
         ArrayList<TransactionDetails> updatedData = new ArrayList<>();
 
         TransactionDetails transaction = transactionDetailsFactory.createTransaction( size,itemName,  quantity,  totalPrice,  discount,  customerDocId,price);
         updatedData.add(transaction);
-
-        Map<String, Object> BasketList = new HashMap<>();
-        BasketList.put("itemSize",size);
-        BasketList.put("itemName", itemName);
-        BasketList.put("quantity", quantity);
-        BasketList.put("totalPrice", totalPrice);
-        BasketList.put("discount", discount);
-        BasketList.put("customerDocumentId", customerDocId);
-        BasketList.put("unitPrice",price);
-
-
-
-        ArrayList<BasketList > updateBasket = new ArrayList<>();
-
-        BasketList basketList = transactionDetailsFactory.createBasket( size,itemName,  quantity,  totalPrice,  discount,  customerDocId,price);
-        updateBasket.add(basketList);
 
         // Store the transaction details in Firestore
         firestoreManager.addDocument("TransactionDetails", transactionDetails, new FirestoreManager.TransactionCompletionListener() {
@@ -295,5 +265,32 @@ public class CustomerSelectedItemActivity extends AppCompatActivity {
 
             }
         });
+
+        Map<String, Object> basketList = new HashMap<>();
+        basketList.put("itemSize",size);
+        basketList.put("itemName", itemName);
+        basketList.put("quantity", quantity);
+        basketList.put("totalPrice", totalPrice);
+        basketList.put("discount", discount);
+        basketList.put("customerDocumentId", customerDocId);
+        basketList.put("unitPrice",price);
+
+        ArrayList<BasketList > updateBasket = new ArrayList<>();
+
+        BasketList basket = transactionDetailsFactory.createBasket( size,itemName,  quantity,  totalPrice,  discount,  customerDocId,price);
+        updateBasket.add(basket);
+
+        firestoreManager.addDocument("BasketList", basketList, new FirestoreManager.TransactionCompletionListener() {
+            @Override
+            public void onTransactionCompleted(boolean success, String errorMessage) {
+
+            }
+        });
+    }
+
+    @Override
+    public void onBasketCountUpdated(int itemCount) {
+        updateBasket(itemCount);
+
     }
 }

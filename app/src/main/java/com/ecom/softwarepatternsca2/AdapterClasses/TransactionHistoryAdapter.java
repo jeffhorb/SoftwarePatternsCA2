@@ -40,7 +40,7 @@ public class TransactionHistoryAdapter extends RecyclerView.Adapter<TransactionH
         holder.totalCost.setText("Total Cost:  "+String.valueOf(transactionDetails.getTotalPrice()));
         holder.discount.setText("Discount:  "+"€"+String.valueOf(transactionDetails.getDiscount()));
         holder.itemPrice.setText("Unit Price:  "+transactionDetails.getUnitPrice());
-        holder.size.setText("Size:  "+transactionDetails.getSize());
+        holder.size.setText("Size:  "+transactionDetails.getItemSize());
 
     }
 

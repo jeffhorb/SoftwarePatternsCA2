@@ -3,6 +3,7 @@ package com.ecom.softwarepatternsca2.MainActivityClasses;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -11,7 +12,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.ecom.softwarepatternsca2.AppManagerClasses.AdminChecker;
 import com.ecom.softwarepatternsca2.AppManagerClasses.FirestoreManager;
+import com.ecom.softwarepatternsca2.Interfaces.AdminCheckCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -49,9 +52,9 @@ public class SelectedItemManager {
                                                     @Override
                                                     public void onUpdateComplete(boolean success) {
                                                         if (success) {
-                                                            Toast.makeText(context, "Purchase successful", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(context, "successful", Toast.LENGTH_SHORT).show();
                                                         } else {
-                                                            Toast.makeText(context, "Purchase cancelled", Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(context, "cancelled", Toast.LENGTH_SHORT).show();
                                                         }
                                                     }
                                                 });
@@ -172,5 +175,87 @@ public class SelectedItemManager {
                         }
                     }
                 });
+    }
+
+    public static void updateQuantityInFirestore(Context context, String itemName, int newQuantity) {
+        // Retrieve the existing quantity from Firestore
+        FirestoreManager firestoreManager = FirestoreManager.getInstance();
+
+        firestoreManager.getDocumentId("Stock", "itemName", itemName, new FirestoreManager.OnDocumentIdRetrievedListener() {
+            @Override
+            public void onDocumentIdRetrieved(String documentId) {
+                if (documentId != null) {
+                    firestoreManager.firestore.collection("Stock").document(documentId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot document = task.getResult();
+                                if (document.exists()) {
+                                    // Get the existing quantity from Firestore
+                                    String existingQuantityString = document.getString("quantity");
+                                    if (existingQuantityString != null) {
+                                        try {
+                                            // Convert existing and new quantities to integers
+                                            int existingQuantity = Integer.parseInt(existingQuantityString);
+
+                                            // Calculate the updated quantity
+                                            int updatedQuantity = existingQuantity + newQuantity;
+
+                                            // Update the quantity in Firestore
+                                            Map<String, Object> data = new HashMap<>();
+                                            data.put("quantity", String.valueOf(updatedQuantity));
+
+                                            firestoreManager.updateDocument("Stock", documentId, data, new FirestoreManager.OnUpdateCompleteListener() {
+                                                @Override
+                                                public void onUpdateComplete(boolean success) {
+                                                    if (success) {
+                                                        // Update UI to reflect the new quantity
+                                                       // quantity.setText("Updated qty:  "+updatedQuantity + " Units");
+                                                        AdminChecker.checkIfAdmin(new AdminCheckCallback() {
+                                                            @Override
+                                                            public void onResult(boolean isAdmin) {
+                                                                if (isAdmin) {
+                                                                    //quantity.setText("Updated qty:  "+updatedQuantity + " Units");
+                                                                    Toast.makeText(context, "Stock quantity updated successfully", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                                else {
+                                                                    Toast.makeText(context, "Item Removed from Basket", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        });
+                                                    } else {
+                                                        AdminChecker.checkIfAdmin(new AdminCheckCallback() {
+                                                            @Override
+                                                            public void onResult(boolean isAdmin) {
+                                                                if (isAdmin) {
+                                                                    Toast.makeText(context, "Failed to update stock quantity", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                                else {
+                                                                    Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        } catch (NumberFormatException e) {
+                                            Toast.makeText(context, "Invalid quantity format", Toast.LENGTH_SHORT).show();
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Existing quantity not found", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Document does not exist", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                Toast.makeText(context, "Failed to get document: " + task.getException(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                } else {
+                    Toast.makeText(context, "Document ID not found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

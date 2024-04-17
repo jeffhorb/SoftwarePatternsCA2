@@ -7,4 +7,6 @@ public interface NavigationHandler {
     boolean onNavigationItemSelected(MenuItem item);
     void onBackPressed();
     void openCustomerList();
+
+   // void openCustomerTransaction();
 }

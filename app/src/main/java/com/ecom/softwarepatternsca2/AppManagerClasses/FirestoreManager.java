@@ -13,6 +13,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.Map;
 
@@ -84,6 +87,13 @@ public class FirestoreManager {
                 });
     }
 
+    public void listenForBasketChanges(String customerId, EventListener<QuerySnapshot> listener) {
+        firestore.collection("BasketList")
+                .whereEqualTo("customerDocumentId", customerId)
+                .addSnapshotListener(listener);
+    }
+
+
     // Method to get the document ID from Firestore
     public void getDocumentId(String collectionPath, String fieldName, String value, final OnDocumentIdRetrievedListener listener) {
         firestore.collection(collectionPath)
@@ -120,6 +130,33 @@ public class FirestoreManager {
                     }
                 });
     }
+
+    public void removeItems(String customerDocId, TransactionCompletionListener listener) {
+        firestore.collection("BasketList")
+                .whereEqualTo("customerDocumentId", customerDocId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    WriteBatch batch = firestore.batch();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        DocumentReference docRef = document.getReference();
+                        batch.delete(docRef);
+                    }
+                    batch.commit()
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("FirestoreManager", "Batch delete successfully executed");
+                                listener.onTransactionCompleted(true, null);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("FirestoreManager", "Error executing batch delete: " + e.getMessage());
+                                listener.onTransactionCompleted(false, e.getMessage());
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirestoreManager", "Error fetching documents to delete: " + e.getMessage());
+                    listener.onTransactionCompleted(false, e.getMessage());
+                });
+    }
+
 
     public interface OnDocumentIdRetrievedListener {
         void onDocumentIdRetrieved(String documentId);

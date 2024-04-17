@@ -3,45 +3,46 @@ package com.ecom.softwarepatternsca2.MainActivityClasses;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ecom.softwarepatternsca2.AdapterClasses.BasketListRvAdapter;
 import com.ecom.softwarepatternsca2.AppManagerClasses.FirestoreManager;
-import com.ecom.softwarepatternsca2.ModelClasses.TransactionDetails;
-import com.ecom.softwarepatternsca2.Patterns.Factory;
+import com.ecom.softwarepatternsca2.ModelClasses.BasketList;
 import com.ecom.softwarepatternsca2.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ShoppingBasket extends AppCompatActivity {
 
@@ -60,6 +61,11 @@ public class ShoppingBasket extends AppCompatActivity {
     String customerDocId;
     ScrollView fullBasket;
 
+    BasketListRvAdapter adapter;
+
+    LinearLayout expandTextView, totalLayout;
+
+    ArrayList<BasketList> basketLists;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +84,14 @@ public class ShoppingBasket extends AppCompatActivity {
         emptyBagMsg = findViewById(R.id.emptyBasket);
         totalAmount = findViewById(R.id.totalAmaout);
         fullBasket = findViewById(R.id.fullBasket);
+        expandTextView = findViewById(R.id.expandImageView);
+        totalLayout = findViewById(R.id.totalLinear);
+        basketLists = new ArrayList<>();
+
+        basketRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
+
+        adapter = new BasketListRvAdapter(basketLists,this);
+        basketRecycler.setAdapter(adapter);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -86,15 +100,15 @@ public class ShoppingBasket extends AppCompatActivity {
 
         getCustomerDetails();
 
-        LinearLayout expandTextView = findViewById(R.id.expandImageView);
-
         expandTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 LinearLayout customerDetails = findViewById(R.id.customerDetails);
                 if (customerDetails.getVisibility() == View.GONE) {
-
                     customerDetails.setVisibility(View.VISIBLE);
+                } else if (customerDetails.getVisibility() == View.VISIBLE)  {
+                    customerDetails.setVisibility(View.GONE);
+
                 }
             }
         });
@@ -158,12 +172,30 @@ public class ShoppingBasket extends AppCompatActivity {
                 setEditTextFields(); // Call the method to update EditText fields based on the checkbox state
             }
         });
-
     }
 
     //needed to calculated the totalAmount
-    private void getCustomerDetails() {
+    // Method to calculate total amount based on customer ID
+    private void calculateTotalAmount(String customerId) {
+        AtomicReference<Double> total = new AtomicReference<>((double) 0);
 
+        firestoreManager.firestore.collection("BasketList")
+                .whereEqualTo("customerDocumentId", customerId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        BasketList basketItem = document.toObject(BasketList.class);
+                        total.updateAndGet(v -> new Double((double) (v + basketItem.getTotalPrice())));
+                    }
+                    // Update totalAmount TextView with the calculated total
+                    totalAmount.setText("€"+String.valueOf(total.get()));
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure
+                });
+    }
+
+    private void getCustomerDetails() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String customerId = currentUser.getUid();
         // Query the Customers collection to retrieve the customer name
@@ -173,11 +205,81 @@ public class ShoppingBasket extends AppCompatActivity {
                 .addOnSuccessListener(customerQuerySnapshot1 -> {
                     for (QueryDocumentSnapshot customerDocument : customerQuerySnapshot1) {
                         customerDocId = customerDocument.getId();
+                        exCusAddr1 = customerDocument.getString("customerAddressLine1");
+                        exCusAddr2 = customerDocument.getString("customerAddressLine2");
+                        exCusAddr3 = customerDocument.getString("customerAddressLine3");
+                        exEir = customerDocument.getString("eircode");
+                        exCusName = customerDocument.getString("customerName");
+                        exCusEmail = customerDocument.getString("customerEmail");
+                        fetchCustomersFromFirestore(customerDocId);
+                        // Calculate total amount after fetching basket data
+                        calculateTotalAmount(customerDocId);
+                        // Listen for changes in the BasketList collection
+                        firestoreManager.listenForBasketChanges(customerDocId, (value, error) -> {
+                            if (error != null) {
+                                // Handle error
+                                return;
+                            }
+                            // Update the empty bag message visibility based on the basket items
+                            assert value != null;
+                            updateEmptyBagMessageVisibility(value);
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure
+                });
+    }
+
+    private void updateEmptyBagMessageVisibility(@NonNull QuerySnapshot snapshot) {
+        if (snapshot.isEmpty()) {
+            emptyBagMsg.setVisibility(View.VISIBLE);
+            basketRecycler.setVisibility(View.GONE);
+            expandTextView.setVisibility(View.GONE);
+            totalLayout.setVisibility(View.GONE);
+        } else {
+            emptyBagMsg.setVisibility(View.GONE);
+            basketRecycler.setVisibility(View.VISIBLE);
+            expandTextView.setVisibility(View.VISIBLE);
+            totalLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void fetchCustomersFromFirestore(String docId) {
+
+        firestoreManager.firestore.collection("BasketList").whereEqualTo("customerDocumentId", docId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                BasketList basketList = document.toObject(BasketList.class);
+
+                                basketLists.add(basketList);
+
+                            }
+
+                            adapter.updateList(basketLists);
+                            // Check if the transaction list is empty
+                            if (!basketLists.isEmpty()) {
+                                // No transactions found, show the "noTransactions" TextView
+                                fullBasket.setVisibility(View.VISIBLE); // Hide the RecyclerView
+                                emptyBagMsg.setVisibility(View.GONE);
+                            }else {
+                                fullBasket.setVisibility(View.GONE);
+                                emptyBagMsg.setVisibility(View.VISIBLE);
+                                basketRecycler.setVisibility(View.INVISIBLE);
+                                expandTextView.setVisibility(View.GONE);
+                                totalLayout.setVisibility(View.GONE);
+                            }
+
+                        }  // Handle errors
+
                     }
                 });
     }
 
-    //when item is rem
 
     private void setEditTextFields() {
         if (useExistingDetails.isChecked()) {
@@ -297,27 +399,45 @@ public class ShoppingBasket extends AppCompatActivity {
                             Toast.makeText(ShoppingBasket.this, "Please Select Card Type", Toast.LENGTH_LONG).show();
                             isValid = false;
                         }
-                        if (isValid) {
 
-                            //you could save card details
-                            AlertDialog.Builder successDialogBuilder = new AlertDialog.Builder(ShoppingBasket.this);
-                            successDialogBuilder.setMessage("Purchase Successful.")
-                                    .setTitle("Confirmation")
-                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            // Close the dialog when the user clicks OK
-                                            dialog.dismiss();
-                                            dial.dismiss();
-                                            customerName.setText("");
-                                            email.setText("");
-                                            addressLine1.setText("");
-                                            addressLine2.setText("");
-                                            addressLine3.setText("");
-                                            eircode.setText("");
-                                        }
-                                    });
-                            AlertDialog successDialog = successDialogBuilder.create();
-                            successDialog.show();
+                        if (isValid) {
+                            dial.dismiss();
+                            customerName.setText("");
+                            email.setText("");
+                            addressLine1.setText("");
+                            addressLine2.setText("");
+                            addressLine3.setText("");
+                            eircode.setText("");
+                            emptyBagMsg.setVisibility(View.VISIBLE);
+                            basketRecycler.setVisibility(View.INVISIBLE);
+                            expandTextView.setVisibility(View.GONE);
+                            totalLayout.setVisibility(View.GONE);
+                            // Remove all items from Basket that belong to the customer with the customerDocId
+                            firestoreManager.removeItems(customerDocId, new FirestoreManager.TransactionCompletionListener() {
+                                @Override
+                                public void onTransactionCompleted(boolean success, String errorMessage) {
+                                    if (success) {
+                                        // Purchase successful
+                                        // You could save card details
+                                        AlertDialog.Builder successDialogBuilder = new AlertDialog.Builder(ShoppingBasket.this);
+                                        successDialogBuilder.setMessage("Purchase Successful.")
+                                                .setTitle("Confirmation")
+                                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int id) {
+                                                        // Close the dialog when the user clicks OK
+                                                        dialog.dismiss();
+                                                    }
+                                                });
+                                        AlertDialog successDialog = successDialogBuilder.create();
+                                        successDialog.show();
+                                    } else {
+                                        // Error occurred while removing items
+                                        // Handle the error
+                                        Log.e("ShoppingBasket", "Error removing items from BasketList: " + errorMessage);
+                                        // Show an error message to the user if necessary
+                                    }
+                                }
+                            });
                         }
                     }
                 });

@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,15 +26,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.ecom.softwarepatternsca2.AdapterClasses.StockAdapterClass;
 import com.ecom.softwarepatternsca2.AppManagerClasses.AdminChecker;
+import com.ecom.softwarepatternsca2.AppManagerClasses.BasketCounter;
 import com.ecom.softwarepatternsca2.AppManagerClasses.FirestoreManager;
 import com.ecom.softwarepatternsca2.AppManagerClasses.SharedPrefManager;
 import com.ecom.softwarepatternsca2.AuthenticationClasses.LoginActivity;
 import com.ecom.softwarepatternsca2.Interfaces.AdminCheckCallback;
+import com.ecom.softwarepatternsca2.Interfaces.BasketCountListener;
 import com.ecom.softwarepatternsca2.Interfaces.NavigationHandler;
 import com.ecom.softwarepatternsca2.Interfaces.StockInteractionListener;
 import com.ecom.softwarepatternsca2.ModelClasses.Stock;
-import com.ecom.softwarepatternsca2.Patterns.FirestoreDataObserver;
 import com.ecom.softwarepatternsca2.Patterns.Factory;
+import com.ecom.softwarepatternsca2.Patterns.FirestoreDataObserver;
 import com.ecom.softwarepatternsca2.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -49,14 +51,14 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HomePage extends AppCompatActivity implements  NavigationHandler, StockInteractionListener {
+public class HomePage extends AppCompatActivity implements  NavigationHandler, StockInteractionListener, BasketCountListener {
 
     private DrawerLayout drawerLayout;
     private StockAdapterClass recyclerAdapter;
@@ -72,6 +74,14 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
 
     private FirestoreDataObserver dataObserver;
     private Factory stockFactory;
+
+    String customerDocId;
+
+    LinearLayout cusTrans;
+
+    LinearLayout basket;
+
+    TextView basketCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +109,11 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         stockArrayList = new ArrayList<>();
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         searchView = findViewById(R.id.searchView);
+        basketCount = findViewById(R.id.basketC);
+        basket = findViewById(R.id.myBasket);
+        cusTrans = findViewById(R.id.transList);
+
+        getCustomerDetails();
 
         manageAccountClicked = false;
 
@@ -108,8 +123,6 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         recyclerView.setAdapter(recyclerAdapter);
 
         NavigationView navigationView = findViewById(R.id.nav_view);
-
-
 
         // Set the item click listener for NavigationView
         navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
@@ -128,6 +141,15 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         dataObserver = new FirestoreDataObserver(stockArrayList, recyclerAdapter);
         stockFactory = new Factory();
 
+        basket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomePage.this, ShoppingBasket.class);
+                startActivity(intent);
+            }
+        });
+
+
         // Get a reference to the BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         AdminChecker.checkIfAdmin(new AdminCheckCallback() {
@@ -136,15 +158,47 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
                 if (isAdmin) {
                     // Set the visibility to VISIBLE
                     bottomNavigationView.setVisibility(View.VISIBLE);
+                    basket.setVisibility(View.GONE);
+                    cusTrans.setVisibility(View.GONE);
+
+
                 } else {
                     // Set the visibility to VISIBLE
                     bottomNavigationView.setVisibility(View.GONE);
+                    basket.setVisibility(View.VISIBLE);
+                    cusTrans.setVisibility(View.VISIBLE);
                 }
             }
         });
     }
 
-    //ADD A SORT BASED ON PRICE lowest to highest - highest to lowest
+
+    private void getCustomerDetails() {
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String customerId = currentUser.getUid();
+        // Query the Customers collection to retrieve the customer name
+        db.collection("Customers")
+                .whereEqualTo("customerId", customerId)
+                .get()
+                .addOnSuccessListener(customerQuerySnapshot1 -> {
+                    for (QueryDocumentSnapshot customerDocument : customerQuerySnapshot1) {
+                        customerDocId = customerDocument.getId();
+                        BasketCounter.getInstance().getBasketItemCountForCustomer(customerDocId, this);
+                        cusTrans.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(HomePage.this, CustomerTransactionHistoryActivity.class);
+                                intent.putExtra("customerId",customerDocId);
+                                startActivity(intent);
+
+
+                            }
+                        });
+
+                    }
+                });
+    }
 
     @Override
     public void onItemClicked(Stock stock) {
@@ -250,27 +304,8 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
     public void openCustomerList() {
         Intent intent = new Intent(HomePage.this, CustomerList.class);
         startActivity(intent);
+
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //return super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.basket, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.basket) {
-            Intent intent = new Intent(HomePage.this, ShoppingBasket.class);
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 
     private void getAllItems() {
         db.collection("Stock").addSnapshotListener((value, error) -> {
@@ -340,9 +375,6 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
             manageAccountClicked = true;
             // Update the user details in the navigation header
             setUserDetailsInNavHeader();
-        }else if (itemId == R.id.viewTransaction){
-
-
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -623,4 +655,13 @@ public class HomePage extends AppCompatActivity implements  NavigationHandler, S
         builder.create().show();
     }
 
+    // Method to update the basket count in real time
+    public void updateBasket(int itemCount) {
+        // Update the basketCount TextView with the new item count
+        basketCount.setText(String.valueOf(itemCount));
+    }
+    @Override
+    public void onBasketCountUpdated(int itemCount) {
+        updateBasket(itemCount);
+    }
 }

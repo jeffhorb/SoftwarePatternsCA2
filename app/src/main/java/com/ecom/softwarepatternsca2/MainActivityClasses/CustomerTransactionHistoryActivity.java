@@ -39,6 +39,8 @@ public class CustomerTransactionHistoryActivity extends AppCompatActivity {
 
     private final FirestoreManager firestoreManager = FirestoreManager.getInstance();
 
+    LinearLayout cusLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class CustomerTransactionHistoryActivity extends AppCompatActivity {
         addr2 = findViewById(R.id.addr2);
         addr3 = findViewById(R.id.addr3);
         eircode = findViewById(R.id.eir);
+        cusLayout = findViewById(R.id.cusLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         transactionDetailsArrayList = new ArrayList<>();
@@ -63,6 +66,12 @@ public class CustomerTransactionHistoryActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        if(getIntent().hasExtra("customerId")){
+            String documentId = getIntent().getStringExtra("customerId");
+            fetchCustomersFromFirestore(documentId);
+            cusLayout.setVisibility(View.GONE);
+        }
 
         if(getIntent().hasExtra("selectedCustomer")){
 

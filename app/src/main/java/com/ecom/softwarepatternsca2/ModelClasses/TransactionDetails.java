@@ -2,7 +2,7 @@ package com.ecom.softwarepatternsca2.ModelClasses;
 
 public class TransactionDetails {
 
-    private String  size;
+    private String  itemSize;
 
 
     private String itemName;
@@ -17,8 +17,9 @@ public class TransactionDetails {
     public TransactionDetails() {
     }
 
-    public TransactionDetails(String size, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
+    public TransactionDetails(String itemSize, String itemName, int quantity, double totalPrice, double discount, String customerDocumentId,String unitPrice) {
 
+        this.itemSize = itemSize;
         this.itemName = itemName;
         this.quantity = quantity;
         this.totalPrice = totalPrice;
@@ -27,12 +28,13 @@ public class TransactionDetails {
         this.unitPrice = unitPrice;
     }
 
-    public String getSize() {
-        return size;
+
+    public String getItemSize() {
+        return itemSize;
     }
 
-    public void setSize(String size) {
-        this.size = size;
+    public void setItemSize(String itemSize) {
+        this.itemSize = itemSize;
     }
 
     public String getItemName() {
